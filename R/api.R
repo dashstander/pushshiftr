@@ -61,10 +61,8 @@ ps_reddit_api <- function(type, search_terms = NA, ...) {
   if (http_error(response)) {
     stop(
       sprintf(
-        "pushshift.io API request failed [%s]\n%s\n<%s>",
-        status_code(response),
-        parsed$message,
-        parsed$documentation_url
+        "pushshift.io API request failed [%s]",
+        status_code(response)
       ),
       call. = FALSE
     )
