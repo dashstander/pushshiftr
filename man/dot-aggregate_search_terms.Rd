@@ -2,7 +2,8 @@
 % Please edit documentation in R/api.R
 \name{.aggregate_search_terms}
 \alias{.aggregate_search_terms}
-\title{Create list of search terms}
+\title{Create list of search terms
+Deprecated}
 \usage{
 .aggregate_search_terms(search_terms)
 }

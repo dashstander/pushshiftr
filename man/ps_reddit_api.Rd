@@ -4,7 +4,7 @@
 \alias{ps_reddit_api}
 \title{Basic function to query the pushshift.io API}
 \usage{
-ps_reddit_api(type, search_terms = NA, ...)
+ps_reddit_api(url, provided_ids = character(0))
 }
 \description{
 Basic function to query the pushshift.io API
