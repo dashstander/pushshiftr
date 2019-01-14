@@ -54,7 +54,7 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 
 
 
-.build_query <- function(type, params, ...) {
+.build_query <- function(type, search_terms, params, ...) {
 
   assert_that(type %in% c("comment", "submission"))
 
@@ -70,14 +70,18 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 #' Basic function to query the pushshift.io API
 #' @description
 #' @export
-ps_reddit_api <- function(url) {
+ps_reddit_api <- function(url, provided_ids = character(0)) {
 
   response = httr::GET(url, USER_AGENT)
 
 
   parsed = jsonlite::fromJSON(content(response,
                                       type = "text",
-                                      encoding = "UTF-8"))
+                                      encoding = "UTF-8"),
+                              simplifyDataFrame = FALSE)
+
+  data = Filter(function(x) x[["id"]] %notin% provided_ids,
+                parsed[["data"]])
 
   if (http_error(response)) {
     stop(
@@ -93,9 +97,7 @@ ps_reddit_api <- function(url) {
     list(
       min_utc = min(parsed$data$created_utc),
       max_utc = max(parsed$data$created_utc),
-      content = parsed$data,
-      path = path,
-      query = url$query,
+      content = data,
       header = headers(response)
     ),
     class = "pushshift_api"
@@ -110,6 +112,18 @@ search_submissions <- function(search_terms = NA, ...) {
 
   url = .build_query("submission", search_terms, ...)
 
+  size = httr::parse_url(url)$query$size
 
-  hit_endpoint <- function() ps_reddit_api(url)
+  data = list()
+  i = 1
+  while(TRUE) {
+    response = ps_reddit_api(url)
+    data[[i]] = response$content
+
+    if (nrow(response$content) == size) {
+
+    }
+  }
+
+  hit_endpoint <- function()
 }
