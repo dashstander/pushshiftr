@@ -11,6 +11,7 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 
 #####################################################################
 #' Create list of search terms
+#' Deprecated
 #' @description Aggregate vector of search terms to build the API call
 #' @arg search_terms a character vector of search terms that will be matched against the text of the submissions or comments.
 #' @return a list of all of the given search terms, with 'q' as the name for each of them
@@ -33,7 +34,7 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
   url = parse_url(BASE_URL)
 
   url$path = path
-  url$query = c(.aggregate_search_terms(search_terms), params)
+  url$query = params
 
   httr::build_url(url)
 }
@@ -45,6 +46,8 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 #'
 .build_params <- function(...) {
   params = list(...)
+
+  names(params)[names(params) == ""] = "q"
   if (is.null(params[["size"]])) params[["size"]] = 25
   if (is.null(params[["sort"]])) params[["sort"]] = "desc"
 
@@ -55,7 +58,7 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 
 #####################################################################
 #'
-.build_query <- function(type, search_terms, params, ...) {
+.build_query <- function(type, ...) {
 
   assert_that(type %in% c("comment", "submission"))
 
@@ -116,11 +119,13 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
 
 
 #####################################################################
-#'
+#'Search submissions
+#' @description High level function that lets you easily search submissions.
+#' @param search_terms
 #' @export
-search_submissions <- function(search_terms = NA, ...) {
+search_submissions <- function(...) {
 
-  url = .build_query("submission", search_terms, ...)
+  url = .build_query("submission", ...)
 
   size = httr::parse_url(url)$query$size
 
