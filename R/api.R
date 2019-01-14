@@ -53,7 +53,8 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 
 
 
-
+#####################################################################
+#'
 .build_query <- function(type, search_terms, params, ...) {
 
   assert_that(type %in% c("comment", "submission"))
@@ -66,6 +67,17 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 }
 
 
+
+#####################################################################
+#'
+.get_possible_duplicate_ids <- function(data, min_utc) {
+
+  data[data$created_utc <= min_utc + 1, "id"]
+
+}
+
+
+
 #####################################################################
 #' Basic function to query the pushshift.io API
 #' @description
@@ -73,15 +85,6 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 ps_reddit_api <- function(url, provided_ids = character(0)) {
 
   response = httr::GET(url, USER_AGENT)
-
-
-  parsed = jsonlite::fromJSON(content(response,
-                                      type = "text",
-                                      encoding = "UTF-8"),
-                              simplifyDataFrame = FALSE)
-
-  data = Filter(function(x) x[["id"]] %notin% provided_ids,
-                parsed[["data"]])
 
   if (http_error(response)) {
     stop(
@@ -93,11 +96,18 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
     )
   }
 
+  parsed = jsonlite::fromJSON(content(response,
+                                      type = "text",
+                                      encoding = "UTF-8"),
+                              simplifyDataFrame = TRUE)
+
+  Data = parsed$data[parsed$data$id %notin% provided_ids, ]
+
   structure(
     list(
-      min_utc = min(parsed$data$created_utc),
-      max_utc = max(parsed$data$created_utc),
-      content = data,
+      min_utc = min(Data$created_utc),
+      max_utc = max(Data$created_utc),
+      content = Data,
       header = headers(response)
     ),
     class = "pushshift_api"
@@ -115,15 +125,21 @@ search_submissions <- function(search_terms = NA, ...) {
   size = httr::parse_url(url)$query$size
 
   data = list()
+  ids = c()
   i = 1
   while(TRUE) {
-    response = ps_reddit_api(url)
+    response = ps_reddit_api(url, ids)
     data[[i]] = response$content
 
     if (nrow(response$content) == size) {
-
+      url = httr::modify_url(url, query = list(after = response$min_utc + 1))
+      ids = .get_possible_duplicate_ids(response$content, response$min_utc)
+      i = i + 1
+      Sys.sleep(1)
+    } else {
+      break
     }
   }
 
-  hit_endpoint <- function()
+  jsonlite::rbind_pages(data)
 }
