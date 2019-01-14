@@ -10,8 +10,10 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 
 
 #####################################################################
-#'
-#'
+#' Create list of search terms
+#' @description Aggregate vector of search terms to build the API call
+#' @arg search_terms a character vector of search terms that will be matched against the text of the submissions or comments.
+#' @return a list of all of the given search terms, with 'q' as the name for each of them
 .aggregate_search_terms <- function(search_terms) {
 
   if (is.na(search_terms)) return(list())
@@ -41,15 +43,34 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 #####################################################################
 #'
 #'
-ps_reddit_api <- function(type, search_terms = NA, ...) {
+.build_params <- function(...) {
+  params = list(...)
+  if (is.null(params[["size"]])) params[["size"]] = 25
+  if (is.null(params[["sort"]])) params[["sort"]] = "desc"
+
+  params
+}
+
+
+
+
+.build_query <- function(type, params, ...) {
 
   assert_that(type %in% c("comment", "submission"))
 
-  params = list(...)
-
   path = sprintf(BASE_PATH, type)
 
+  params = .build_params(...)
+
   url = .build_url(path, search_terms, params)
+}
+
+
+#####################################################################
+#' Basic function to query the pushshift.io API
+#' @description
+#' @export
+ps_reddit_api <- function(url) {
 
   response = httr::GET(url, USER_AGENT)
 
@@ -70,10 +91,25 @@ ps_reddit_api <- function(type, search_terms = NA, ...) {
 
   structure(
     list(
+      min_utc = min(parsed$data$created_utc),
+      max_utc = max(parsed$data$created_utc),
       content = parsed$data,
       path = path,
-      response = response
+      query = url$query,
+      header = headers(response)
     ),
     class = "pushshift_api"
   )
+}
+
+
+#####################################################################
+#'
+#' @export
+search_submissions <- function(search_terms = NA, ...) {
+
+  url = .build_query("submission", search_terms, ...)
+
+
+  hit_endpoint <- function() ps_reddit_api(url)
 }
