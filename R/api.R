@@ -29,9 +29,9 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 #####################################################################
 #'
 #'
-.build_url <- function(path, search_terms, params) {
+.build_url <- function(path, params) {
 
-  url = parse_url(BASE_URL)
+  url = httr::parse_url(BASE_URL)
 
   url$path = path
   url$query = params
@@ -60,13 +60,13 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
 #'
 .build_query <- function(type, ...) {
 
-  assert_that(type %in% c("comment", "submission"))
+  stopifnot(type %in% c("comment", "submission"))
 
   path = sprintf(BASE_PATH, type)
 
   params = .build_params(...)
 
-  url = .build_url(path, search_terms, params)
+  url = .build_url(path, params)
 }
 
 
@@ -89,17 +89,17 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
 
   response = httr::GET(url, USER_AGENT)
 
-  if (http_error(response)) {
+  if (httr::http_error(response)) {
     stop(
       sprintf(
         "pushshift.io API request failed [%s]",
-        status_code(response)
+        httr::status_code(response)
       ),
       call. = FALSE
     )
   }
 
-  parsed = jsonlite::fromJSON(content(response,
+  parsed = jsonlite::fromJSON(httr::content(response,
                                       type = "text",
                                       encoding = "UTF-8"),
                               simplifyDataFrame = TRUE)
@@ -111,7 +111,7 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
       min_utc = min(Data$created_utc),
       max_utc = max(Data$created_utc),
       content = Data,
-      header = headers(response)
+      header = httr::headers(response)
     ),
     class = "pushshift_api"
   )
