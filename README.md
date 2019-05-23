@@ -17,6 +17,6 @@ devtools::install_github("whereofonecannotspeak/pushshiftr")
 The basic use case is searching submissions or comments. If you want to know whether your question about Romance of the Three Kingdoms has been asked on /r/AskHistorians recently you might run this command:
 
 ``` r
-search_submissions("Cao Cao", "Liu Bei", subreddit = "AskHistorians", after = "30d")
+search_submissions("Cao Cao", "Liu Bei", subreddit = "AskHistorians", since = "30d")
 ```
 
