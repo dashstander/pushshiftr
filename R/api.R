@@ -177,7 +177,8 @@ ps_search <- function(type = c("comment", "submission"), ...) {
     print(url)
     response = ps_reddit_api(url, ids)
     ids = c()
-    data[[i]] = response$content
+
+    if (is.data.frame(response$content) && nrow(response$content)) data[[i]] = response$content
 
     if (nrow(response$content) > 0) {
       print(sprintf("Found %d rows, with min_time of %s",
