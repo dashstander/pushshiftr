@@ -1,12 +1,12 @@
-library(httr)
-library(jsonlite)
-library(lubridate)
+#library(httr)
+#library(jsonlite)
+#library(lubridate)
 
 BASE_URL <- "https://api.pushshift.io/"
 BASE_PATH <- "reddit/search/%s/"
-USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
+USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
 
-
+COMMA_SEP_FIELDS = c("ids", "fields", "author", "subreddit")
 
 
 
@@ -25,6 +25,33 @@ USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
   Reduce(c, lapply(search_terms, q_list))
 }
 
+
+#####################################################################
+#'
+#'
+.replace_encoded_commas <- function(url) {
+
+  field_match_pattern = paste0("^", paste(COMMA_SEP_FIELDS, collapse = "|"), "=.*")
+
+  # Main api path (e.g. api.pushshift.io/search/submission/) separated from query params
+  # by a "?"
+  query_split = stringr::str_split(url, "\\?")[[1]]
+
+  # Individual query params separated by a "&"
+  param_split = stringr::str_split(query_split[[2]], "&")[[1]]
+
+  comma_sep_params = stringr::str_detect(string = param_split,
+                                         pattern = field_match_pattern)
+
+  param_split[comma_sep_params] = stringr::str_replace_all(param_split[comma_sep_params],
+                                                           pattern = "%2C",
+                                                           replacement = ",")
+
+  rebuilt_url = paste0(query_split[[1]], "?",
+                       paste(param_split, collapse = "&"))
+
+  rebuilt_url
+}
 
 
 #####################################################################
@@ -69,7 +96,7 @@ parse_search_terms <- function(params) {
 
   search_terms[has_comma_or_space] = paste0("'", search_terms[has_comma_or_space], "'")
 
-  other_params[["q"]] = paste(search_terms, collapse = ",")
+  if (length(search_terms) > 0) other_params[["q"]] = paste(search_terms, collapse = ",")
   other_params
 }
 
@@ -99,6 +126,11 @@ parse_search_terms <- function(params) {
   params = .build_params(...)
 
   url = .build_url(path, params)
+
+  if (any(names(params) %in% COMMA_SEP_FIELDS)) url = .replace_encoded_commas(url)
+
+  url
+
 }
 
 
@@ -149,7 +181,7 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
       content = Data,
       header = httr::headers(response)
     ),
-    class = "pushshift_api"
+    class = "pushshift_api_response"
   )
 }
 
@@ -172,6 +204,12 @@ ps_search <- function(type = c("comment", "submission"), ...) {
   data = list()
   ids = c()
   i = 1
+
+  if ("ids" %in% names(list(...))) {
+
+  }
+
+
   while(TRUE) {
     #if (i > 10) break
     print(url)
@@ -218,5 +256,11 @@ search_submissions <- function(...) {
 search_comments <- function(...) {
 
   ps_search(type = "comment", ...)
+
+}
+
+
+
+get_comment_ids <- function(submission_id) {
 
 }
