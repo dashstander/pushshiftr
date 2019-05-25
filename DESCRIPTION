@@ -5,13 +5,14 @@ Version: 0.1.0
 Author: Dashiell Stander
 Maintainer: The package maintainer <dash.stander@gmail.com>
 Description: Easily search submissions and comments from reddit.com with the pushshift.io API
-License: MIT + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat
 Imports: 
     httr,
-    jsonlite
+    jsonlite,
+    lubridate
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1

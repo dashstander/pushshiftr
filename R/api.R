@@ -1,7 +1,3 @@
-#library(httr)
-#library(jsonlite)
-#library(lubridate)
-
 BASE_URL <- "https://api.pushshift.io/"
 BASE_PATH <- "reddit/search/%s/"
 USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
