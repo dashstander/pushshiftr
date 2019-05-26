@@ -6,6 +6,11 @@
 \usage{
 ps_reddit_api(url, provided_ids = character(0))
 }
+\arguments{
+\item{url}{httr URL object, contains all of the info about which endpoint, search terms, etc...}
+
+\item{provided_ids}{character vector of ids to exclude}
+}
 \description{
-Basic function to query the pushshift.io API
+Given a URL, returns the response
 }

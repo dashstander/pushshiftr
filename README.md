@@ -1,4 +1,6 @@
-[![Travis build status](https://travis-ci.org/whereofonecannotspeak/pushshiftr.svg?branch=master)](https://travis-ci.org/whereofonecannotspeak/pushshiftr)
+[![Travis build status](https://travis-ci.org/dashstander/pushshiftr.svg?branch=master)](https://travis-ci.org/dashstander/pushshiftr)
+
+[![Codecov test coverage](https://codecov.io/gh/dashstander/pushshiftr/branch/master/graph/badge.svg)](https://codecov.io/gh/dashstander/pushshiftr?branch=master)
 
 # pushshiftr
 

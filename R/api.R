@@ -1,134 +1,7 @@
+
 BASE_URL <- "https://api.pushshift.io/"
 BASE_PATH <- "reddit/search/%s/"
 USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
-
-COMMA_SEP_FIELDS = c("ids", "fields", "author", "subreddit")
-
-
-
-#####################################################################
-#' Create list of search terms
-#' Deprecated
-#' @description Aggregate vector of search terms to build the API call
-#' @arg search_terms a character vector of search terms that will be matched against the text of the submissions or comments.
-#' @return a list of all of the given search terms, with 'q' as the name for each of them
-.aggregate_search_terms <- function(search_terms) {
-
-  if (is.na(search_terms)) return(list())
-
-  q_list <- function(x) list(q = x)
-
-  Reduce(c, lapply(search_terms, q_list))
-}
-
-
-#####################################################################
-#'
-#'
-.replace_encoded_commas <- function(url) {
-
-  field_match_pattern = paste0("^", paste(COMMA_SEP_FIELDS, collapse = "|"), "=.*")
-
-  # Main api path (e.g. api.pushshift.io/search/submission/) separated from query params
-  # by a "?"
-  query_split = stringr::str_split(url, "\\?")[[1]]
-
-  # Individual query params separated by a "&"
-  param_split = stringr::str_split(query_split[[2]], "&")[[1]]
-
-  comma_sep_params = stringr::str_detect(string = param_split,
-                                         pattern = field_match_pattern)
-
-  param_split[comma_sep_params] = stringr::str_replace_all(param_split[comma_sep_params],
-                                                           pattern = "%2C",
-                                                           replacement = ",")
-
-  rebuilt_url = paste0(query_split[[1]], "?",
-                       paste(param_split, collapse = "&"))
-
-  rebuilt_url
-}
-
-
-#####################################################################
-#'
-#'
-.build_url <- function(path, params) {
-
-  url = httr::parse_url(BASE_URL)
-
-  url$path = path
-  url$query = params
-
-  httr::build_url(url)
-}
-
-
-#####################################################################
-#'
-#'
-parse_dates <- function(params) {
-  until = params[["until"]]
-  since = params[["since"]]
-
-
-  if (!is.null(until) && !is.numeric(until)) {
-    params[["until"]] = lubridate::seconds(lubridate::as_datetime(until))
-  }
-
-  if (!is.null(since) && !is.numeric(since)) {
-    params[["since"]] = lubridate::seconds(lubridate::as_datetime(since))
-  }
-
-  params
-}
-
-
-parse_search_terms <- function(params) {
-  search_terms = params[names(params) == ""]
-  other_params = params[names(params) != ""]
-
-  has_comma_or_space = grepl(",| ", search_terms)
-
-  search_terms[has_comma_or_space] = paste0("'", search_terms[has_comma_or_space], "'")
-
-  if (length(search_terms) > 0) other_params[["q"]] = paste(search_terms, collapse = ",")
-  other_params
-}
-
-
-#####################################################################
-#'
-#'
-.build_params <- function(...) {
-  params = parse_search_terms(list(...))
-
-  if (is.null(params[["size"]])) params[["size"]] = 25
-  if (is.null(params[["sort"]])) params[["sort"]] = "desc"
-
-  params
-}
-
-
-
-#####################################################################
-#'
-.build_query <- function(type, ...) {
-
-  stopifnot(type %in% c("comment", "submission"))
-
-  path = sprintf(BASE_PATH, type)
-
-  params = .build_params(...)
-
-  url = .build_url(path, params)
-
-  if (any(names(params) %in% COMMA_SEP_FIELDS)) url = .replace_encoded_commas(url)
-
-  url
-
-}
-
 
 
 #####################################################################
@@ -149,7 +22,7 @@ parse_search_terms <- function(params) {
 #' @export
 ps_reddit_api <- function(url, provided_ids = character(0)) {
 
-  response = httr::GET(url, USER_AGENT)
+  response <- httr::GET(url, USER_AGENT)
 
   if (httr::http_error(response)) {
     stop(
@@ -161,12 +34,12 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
     )
   }
 
-  parsed = jsonlite::fromJSON(httr::content(response,
-                                            type = "text",
-                                            encoding = "UTF-8"),
+  parsed <- jsonlite::fromJSON(httr::content(response,
+                                             type = "text",
+                                             encoding = "UTF-8"),
                               simplifyDataFrame = TRUE)
 
-  Data = parsed$data[parsed$data$id %notin% provided_ids, ]
+  Data <- parsed$data[parsed$data$id %notin% provided_ids, ]
 
   structure(
     list(
@@ -177,7 +50,7 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
       content = Data,
       header = httr::headers(response)
     ),
-    class = "pushshift_api_response"
+    class = "ps_api_response"
   )
 }
 
@@ -190,37 +63,31 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
 #' @param type Either "comment" or "submission", depending on which objects you want to search.
 #' @return a dataframe of the objects that the API has returned
 #' @export
-ps_search <- function(type = c("comment", "submission"), ...) {
-  type = match.arg(type)
+ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
+  type <- match.arg(type)
 
-  url = .build_query(type, ...)
+  url <- .build_query(type, ...)
 
-  size = httr::parse_url(url)$query$size
+  size <- httr::parse_url(url)$query$size
 
-  data = list()
-  ids = c()
-  i = 1
-
-  if ("ids" %in% names(list(...))) {
-
-  }
-
+  data <- list()
+  ids <- c()
+  i <- 1
 
   while(TRUE) {
-    #if (i > 10) break
     print(url)
-    response = ps_reddit_api(url, ids)
-    ids = c()
+    response <- ps_reddit_api(url, ids)
+    ids <- c()
 
-    if (is.data.frame(response$content) && nrow(response$content)) data[[i]] = response$content
+    if (is.data.frame(response$content) && nrow(response$content)) data[[i]] <- response$content
 
     if (nrow(response$content) > 0) {
       print(sprintf("Found %d rows, with min_time of %s",
                     nrow(response$content),
                     as.character(lubridate::as_datetime(response$min_utc))))
-      url = httr::modify_url(url, query = list(until = response$min_utc + 1))
-      ids = .get_possible_duplicate_ids(response$content, response$min_utc)
-      i = i + 1
+      url <- httr::modify_url(url, query = list(until = response$min_utc + 1))
+      ids <- .get_possible_duplicate_ids(response$content, response$min_utc)
+      i <- i + 1
       Sys.sleep(1)
     } else {
       break
@@ -236,7 +103,7 @@ ps_search <- function(type = c("comment", "submission"), ...) {
 #' @description High level function that lets you easily search submissions.
 #' @param search_terms
 #' @export
-search_submissions <- function(...) {
+ps_search_submissions <- function(search_terms = "", ...) {
 
   ps_search(type = "submission", ...)
 
@@ -249,7 +116,7 @@ search_submissions <- function(...) {
 #' @description High level function that lets you easily search comments
 #' @param search_terms
 #' @export
-search_comments <- function(...) {
+ps_search_comments <- function(search_terms = "", ...) {
 
   ps_search(type = "comment", ...)
 
@@ -257,6 +124,11 @@ search_comments <- function(...) {
 
 
 
-get_comment_ids <- function(submission_id) {
+#####################################################################
+#'Search reddit comments
+#' @description Gets the comment ids for the comments in specific posts
+#' @param search_terms
+#' @export
+ps_get_comment_ids <- function(submission_id) {
 
 }
