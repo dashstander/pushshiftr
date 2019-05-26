@@ -6,6 +6,12 @@
 \usage{
 ... \%notin\% NA
 }
+\arguments{
+\item{...}{two vectors: one that you're checking the values for and one that you're checking against}
+}
 \description{
-This is my favorite function.
+The exact opposite of `%in%``
+}
+\details{
+equivalent to \code{!x \%in\% y}
 }
