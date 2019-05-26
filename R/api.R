@@ -4,15 +4,6 @@ BASE_PATH <- "reddit/search/%s/"
 USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
 
 
-#####################################################################
-#'
-.get_possible_duplicate_ids <- function(data, min_utc) {
-
-  data[data$created_utc <= min_utc + 1, "id"]
-
-}
-
-
 
 #####################################################################
 #' Basic function to query the pushshift.io API
