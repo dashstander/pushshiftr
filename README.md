@@ -1,4 +1,6 @@
-[![Travis build status](https://travis-ci.org/whereofonecannotspeak/pushshiftr.svg?branch=master)](https://travis-ci.org/whereofonecannotspeak/pushshiftr)
+[![Travis build status](https://travis-ci.org/dashstander/pushshiftr.svg?branch=master)](https://travis-ci.org/dashstander/pushshiftr)
+
+[![Codecov test coverage](https://codecov.io/gh/dashstander/pushshiftr/branch/master/graph/badge.svg)](https://codecov.io/gh/dashstander/pushshiftr?branch=master)
 
 # pushshiftr
 
@@ -9,6 +11,7 @@ An R package for connection to the https://pushshift.io API.
 I only just started this, so it's not on [CRAN](https://CRAN.R-project.org) (and I'm not at all sure it ever will be). If you'd like to install this and give it a whirl, the best way would be to use the `devtools` package:
 
 ``` r
+install.packages("devtools")
 devtools::install_github("whereofonecannotspeak/pushshiftr")
 ```
 

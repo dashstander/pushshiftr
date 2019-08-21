@@ -4,15 +4,18 @@ Title: Wrapper for pushshift.io API
 Version: 0.1.0
 Author: Dashiell Stander
 Maintainer: The package maintainer <dash.stander@gmail.com>
-Description: Easily search submissions and comments from reddit.com
-    with the pushshift.io API.
-License: MIT + file LICENSE
+Description: Easily search submissions and comments from reddit.com with the pushshift.io API.
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    testthat
+    testthat,
+    covr
 Imports: 
     httr,
-    jsonlite
+    jsonlite,
+    lubridate,
+    purrr,
+    stringr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1

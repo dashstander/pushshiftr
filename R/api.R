@@ -1,103 +1,18 @@
-library(httr)
-library(jsonlite)
 
 BASE_URL <- "https://api.pushshift.io/"
 BASE_PATH <- "reddit/search/%s/"
-USER_AGENT <- httr::user_agent("www.github.com/whereofonecannotspeak/pushiftr")
-
-
-
-
-
-#####################################################################
-#' Create list of search terms
-#' Deprecated
-#' @description Aggregate vector of search terms to build the API call
-#' @param search_terms a character vector of search terms that will be matched against the text of the submissions or comments.
-#' @return a list of all of the given search terms, with 'q' as the name for each of them
-.aggregate_search_terms <- function(search_terms) {
-
-  if (is.na(search_terms)) return(list())
-
-  q_list <- function(x) list(q = x)
-
-  Reduce(c, lapply(search_terms, q_list))
-}
-
-
-
-#####################################################################
-#' Put together the pieces of the URL
-#' @description
-.build_url <- function(path, params) {
-
-  url = httr::parse_url(BASE_URL)
-
-  url$path = path
-  url$query = params
-
-  httr::build_url(url)
-}
-
-
-
-#####################################################################
-#' Builds the list of query parameters
-#' @description Puts together the list of query parameters necessary to query the API.
-#' @param ... the list of parameters. Non-named parameters are assumed to be search terms.
-#' @return list of parameters
-#' @details There are two necessary parameters: "size" and "sort". If they are not present, then they
-#' are added. Their default values are 25 and "desc" (i.e. "descending"), respectively.
-.build_params <- function(...) {
-  params = list(...)
-
-  names(params)[names(params) == ""] = "q"
-  if (is.null(params[["size"]])) params[["size"]] = 25
-  if (is.null(params[["sort"]])) params[["sort"]] = "desc"
-
-  params
-}
-
-
-
-#####################################################################
-#'
-.build_query <- function(type, ...) {
-
-  stopifnot(type %in% c("comment", "submission"))
-
-  path = sprintf(BASE_PATH, type)
-
-  params = .build_params(...)
-
-  url = .build_url(path, params)
-}
-
-
-
-#####################################################################
-#'
-.get_possible_duplicate_ids <- function(data, min_utc) {
-
-  data[data$created_utc <= min_utc + 1, "id"]
-
-}
-
+USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
 
 
 #####################################################################
 #' Basic function to query the pushshift.io API
-#' @description Hits the API, parses the result, returns the result.
-#' @param url: the pushshift.io URL that contains the query
-#' @param previously_provided_ids: IDs of comments/submissions that have already been returned
-#' @return pushshift_api object, includes the response headers, the content as a dataframe, and the min/max utc of the objects in the response.
-#' @details `previously_provided_ids` is a vector of IDs that will be filtered out of the result, if present.
-#' Pagination requires that you keep track of the `created_utc` values of the objects you've returned and that you use the
-#' `before` and `after` parameters to then cycle through the remaining comments/submissions. There are inevitably some duplicates that need to be dealt with.
+#' @description Given a URL, returns the response
+#' @param url httr URL object, contains all of the info about which endpoint, search terms, etc...
+#' @param provided_ids character vector of ids to exclude
 #' @export
 ps_reddit_api <- function(url, previously_provided_ids = character(0)) {
 
-  response = httr::GET(url, USER_AGENT)
+  response <- httr::GET(url, USER_AGENT)
 
   if (httr::http_error(response)) {
     stop(
@@ -109,50 +24,59 @@ ps_reddit_api <- function(url, previously_provided_ids = character(0)) {
     )
   }
 
-  parsed = jsonlite::fromJSON(httr::content(response,
-                                      type = "text",
-                                      encoding = "UTF-8"),
+  parsed <- jsonlite::fromJSON(httr::content(response,
+                                             type = "text",
+                                             encoding = "UTF-8"),
                               simplifyDataFrame = TRUE)
 
-  Data = parsed$data[parsed$data$id %notin% previously_provided_ids, ]
+  Data <- parsed$data[parsed$data$id %notin% provided_ids, ]
 
   structure(
     list(
-      min_utc = min(Data$created_utc),
-      max_utc = max(Data$created_utc),
+      min_utc = tryCatch(min(Data$created_utc),
+                         warning = function(e) NA),
+      max_utc = tryCatch(max(Data$created_utc),
+                         warning = function(e) NA),
       content = Data,
       header = httr::headers(response)
     ),
-    class = "pushshift_api"
+    class = "ps_api_response"
   )
 }
 
 
+
+
 #####################################################################
-#' Search reddit
-#'
-#' High level function that lets you easily search submissions or comments.
-#'
-#' @param content Character. Either "comments" or "submissions"
-#' @param ... The parameters to the search. Unnamed parameters are assumed to be search terms.
-#' @return A dataframe of the results.
-search_reddit <- function(content, ...) {
+#' Using the API for search
+#' @description Builds the query from parameters that you pass in, handles pagination, etc...
+#' @param type Either "comment" or "submission", depending on which objects you want to search.
+#' @return a dataframe of the objects that the API has returned
+#' @export
+ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
+  type <- match.arg(type)
 
-  url = .build_query(content, ...)
+  query <- ps_query(type=type, ...)
 
-  size = httr::parse_url(url)$query$size
+  size <- query$size
 
-  data = list()
-  ids = c()
-  i = 1
+  data <- list()
+  ids <- c()
+  i <- 1
+
   while(TRUE) {
-    response = ps_reddit_api(url, ids)
-    data[[i]] = response$content
+    response <- ps_reddit_api(query$url, ids)
+    ids <- c()
 
-    if (nrow(response$content) == size) {
-      url = httr::modify_url(url, query = list(after = response$min_utc + 1))
-      ids = .get_possible_duplicate_ids(response$content, response$min_utc)
-      i = i + 1
+    if (is.data.frame(response$content) && nrow(response$content)) data[[i]] <- response$content
+
+    if (nrow(response$content) > 0) {
+      print(sprintf("Found %d rows, with min_time of %s",
+                    nrow(response$content),
+                    as.character(lubridate::as_datetime(response$min_utc))))
+      query$url <- httr::modify_url(query$url, query = list(until = response$min_utc + 1))
+      ids <- .get_possible_duplicate_ids(response$content, response$min_utc)
+      i <- i + 1
       Sys.sleep(1)
     } else {
       break
@@ -160,6 +84,45 @@ search_reddit <- function(content, ...) {
   }
 
   jsonlite::rbind_pages(data)
+
+}
+
+#####################################################################
+#'Search submissions
+#' @description High level function that lets you easily search submissions.
+#' @param search_terms The terms to search for. Will search the post title and selftext.
+#' @param
+#' @return a dataframe
+#' @export
+ps_search_submissions <- function(search_terms = "", ...) {
+
+  ps_search(type = "submission", ...)
+
+}
+
+
+
+#####################################################################
+#'Search reddit comments
+#' @description High level function that lets you easily search comments
+#' @param search_terms
+#' @param ... Any extra parameters to give the query, e.g. since, until, etc...
+#' @export
+ps_search_comments <- function(search_terms = "", ...) {
+
+  ps_search(type = "comment", ...)
+
+}
+
+
+
+#####################################################################
+#'Search reddit comments
+#' @description Gets the comment ids for the comments in specific posts
+#' @param submission_id the id of the submission (post) in question.
+#' @export
+ps_get_comment_ids <- function(submission_id) {
+
 }
 
 

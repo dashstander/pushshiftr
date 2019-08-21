@@ -14,11 +14,11 @@ ps_reddit_api(url, previously_provided_ids = character(0))
 \value{
 pushshift_api object, includes the response headers, the content as a dataframe, and the min/max utc of the objects in the response.
 }
-\description{
-Hits the API, parses the result, returns the result.
+\arguments{
+\item{url}{httr URL object, contains all of the info about which endpoint, search terms, etc...}
+
+\item{provided_ids}{character vector of ids to exclude}
 }
-\details{
-\code{previously_provided_ids} is a vector of IDs that will be filtered out of the result, if present.
-Pagination requires that you keep track of the \code{created_utc} values of the objects you've returned and that you use the
-\code{before} and \code{after} parameters to then cycle through the remaining comments/submissions. There are inevitably some duplicates that need to be dealt with.
+\description{
+Given a URL, returns the response
 }
