@@ -3,7 +3,7 @@
 #' @description The exact opposite of `%in%``
 #' @param ... two vectors: one that you're checking the values for and one that you're checking against
 #' @details equivalent to `!x %in% y`
-#' @export
+#'
 `%notin%` <- Negate(`%in%`)
 
 

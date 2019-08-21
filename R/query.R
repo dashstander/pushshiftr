@@ -7,7 +7,7 @@ aggregate_fields <- c("author", "link_id", "created_utc", "subreddit")
 
 #####################################################################
 #'
-#'
+#' @export
 ps_query <- function(type, ...) {
   query_pieces <- .build_query(type, ...)
 
@@ -16,24 +16,24 @@ ps_query <- function(type, ...) {
 
 
 
-
 #####################################################################
 #'
-#'
-new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strategy) {
+#' @export
+new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strategy, size) {
   structure(
     list(url = url,
          type = type,
          sort_type = sort_type,
          sort_direction = sort_direction,
-         pagination_strategy = pagination_strategy),
+         pagination_strategy = pagination_strategy,
+         size=size),
     class =  "ps_query"
   )
 }
 
 
 #####################################################################
-#'
+#' @export
 .build_query <- function(type, search_terms, ...) {
 
   stopifnot(type %in% c("comment", "submission", "subreddit"))
@@ -57,7 +57,8 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
        type = type,
        sort_type = sort_type,
        sort_direction = sort_direction,
-       pagination_strategy = pagination_strategy)
+       pagination_strategy = pagination_strategy,
+       size = params[["size"]])
 
 }
 
@@ -65,7 +66,7 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 #####################################################################
 #'
-#'
+#' @export
 .build_url <- function(path, params) {
 
   url <- httr::parse_url(BASE_URL)
@@ -79,9 +80,8 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 #####################################################################
 #'
-#'
+#' @export
 .build_params <- function(...) {
-
   params <- list(...)
 
   if ("q" %in% names(params)) params[["q"]] <- .parse_search_terms(params[["q"]])
@@ -100,7 +100,7 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 #####################################################################
 #'
-#'
+#' @export
 .parse_search_terms <- function(search_terms) {
 
   has_comma_or_space <- grepl(",| ", search_terms)
@@ -113,7 +113,7 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 #####################################################################
 #'
-#'
+#' @export
 .replace_encoded_commas <- function(url) {
 
   field_match_pattern <- paste0("^", paste(comma_sep_fields, collapse = "|"), "=.*")

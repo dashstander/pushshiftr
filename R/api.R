@@ -57,17 +57,16 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
 ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
   type <- match.arg(type)
 
-  url <- .build_query(type, ...)
+  query <- ps_query(type=type, ...)
 
-  size <- httr::parse_url(url)$query$size
+  size <- query$size
 
   data <- list()
   ids <- c()
   i <- 1
 
   while(TRUE) {
-    print(url)
-    response <- ps_reddit_api(url, ids)
+    response <- ps_reddit_api(query$url, ids)
     ids <- c()
 
     if (is.data.frame(response$content) && nrow(response$content)) data[[i]] <- response$content
@@ -76,7 +75,7 @@ ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
       print(sprintf("Found %d rows, with min_time of %s",
                     nrow(response$content),
                     as.character(lubridate::as_datetime(response$min_utc))))
-      url <- httr::modify_url(url, query = list(until = response$min_utc + 1))
+      query$url <- httr::modify_url(query$url, query = list(until = response$min_utc + 1))
       ids <- .get_possible_duplicate_ids(response$content, response$min_utc)
       i <- i + 1
       Sys.sleep(1)
@@ -92,7 +91,9 @@ ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
 #####################################################################
 #'Search submissions
 #' @description High level function that lets you easily search submissions.
-#' @param search_terms
+#' @param search_terms The terms to search for. Will search the post title and selftext.
+#' @param
+#' @return a dataframe
 #' @export
 ps_search_submissions <- function(search_terms = "", ...) {
 
@@ -106,6 +107,7 @@ ps_search_submissions <- function(search_terms = "", ...) {
 #'Search reddit comments
 #' @description High level function that lets you easily search comments
 #' @param search_terms
+#' @param ... Any extra parameters to give the query, e.g. since, until, etc...
 #' @export
 ps_search_comments <- function(search_terms = "", ...) {
 
@@ -118,7 +120,7 @@ ps_search_comments <- function(search_terms = "", ...) {
 #####################################################################
 #'Search reddit comments
 #' @description Gets the comment ids for the comments in specific posts
-#' @param search_terms
+#' @param submission_id the id of the submission (post) in question.
 #' @export
 ps_get_comment_ids <- function(submission_id) {
 
