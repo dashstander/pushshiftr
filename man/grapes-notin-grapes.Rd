@@ -2,10 +2,19 @@
 % Please edit documentation in R/utils.R
 \name{\%notin\%}
 \alias{\%notin\%}
-\title{This is my favorite function.}
+\title{The opposite of %in%}
 \usage{
-... \%notin\% NA
+x %in% y
+}
+\arguments{
+\item{x}{vector, the values to be (not) matched}
+
+\item{y}{vector, the values to be (not) matched against}
 }
 \description{
-This is my favorite function.
+The opposite of %in%
+}
+\examples{
+4 \%notin\% c(1:3, 5:10)
+"hello" \%notin\% c("hello", "it's", "me")
 }

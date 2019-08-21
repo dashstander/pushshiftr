@@ -4,8 +4,21 @@
 \alias{ps_reddit_api}
 \title{Basic function to query the pushshift.io API}
 \usage{
-ps_reddit_api(url, provided_ids = character(0))
+ps_reddit_api(url, previously_provided_ids = character(0))
+}
+\arguments{
+\item{url:}{the pushshift.io URL that contains the query}
+
+\item{previously_provided_ids:}{IDs of comments/submissions that have already been returned}
+}
+\value{
+pushshift_api object, includes the response headers, the content as a dataframe, and the min/max utc of the objects in the response.
 }
 \description{
-Basic function to query the pushshift.io API
+Hits the API, parses the result, returns the result.
+}
+\details{
+\code{previously_provided_ids} is a vector of IDs that will be filtered out of the result, if present.
+Pagination requires that you keep track of the \code{created_utc} values of the objects you've returned and that you use the
+\code{before} and \code{after} parameters to then cycle through the remaining comments/submissions. There are inevitably some duplicates that need to be dealt with.
 }

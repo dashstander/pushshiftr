@@ -4,7 +4,8 @@ Title: Wrapper for pushshift.io API
 Version: 0.1.0
 Author: Dashiell Stander
 Maintainer: The package maintainer <dash.stander@gmail.com>
-Description: Easily search submissions and comments from reddit.com with the pushshift.io API
+Description: Easily search submissions and comments from reddit.com
+    with the pushshift.io API.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

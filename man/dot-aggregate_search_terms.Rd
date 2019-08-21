@@ -7,6 +7,9 @@ Deprecated}
 \usage{
 .aggregate_search_terms(search_terms)
 }
+\arguments{
+\item{search_terms}{a character vector of search terms that will be matched against the text of the submissions or comments.}
+}
 \value{
 a list of all of the given search terms, with 'q' as the name for each of them
 }

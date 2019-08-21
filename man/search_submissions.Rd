@@ -7,5 +7,5 @@
 search_submissions(...)
 }
 \description{
-High level function that lets you easily search submissions.
+Search submissions
 }
