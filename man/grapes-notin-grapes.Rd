@@ -15,16 +15,9 @@ x %in% y
 \item{...}{two vectors: one that you're checking the values for and one that you're checking against}
 }
 \description{
-<<<<<<< HEAD
 The opposite of %in%
 }
 \examples{
 4 \%notin\% c(1:3, 5:10)
 "hello" \%notin\% c("hello", "it's", "me")
-=======
-The exact opposite of `%in%``
-}
-\details{
-equivalent to \code{!x \%in\% y}
->>>>>>> cd66bbe15f5412c6c21c2b6fec9bb5300a2ba00d
 }
