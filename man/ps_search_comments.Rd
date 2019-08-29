@@ -6,6 +6,11 @@
 \usage{
 ps_search_comments(search_terms = "", ...)
 }
+\arguments{
+\item{search_terms}{character vector of the key words to search for}
+
+\item{...}{Any extra parameters to give the query, e.g. since, until, etc...}
+}
 \description{
 High level function that lets you easily search comments
 }

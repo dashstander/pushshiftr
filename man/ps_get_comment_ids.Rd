@@ -6,6 +6,9 @@
 \usage{
 ps_get_comment_ids(submission_id)
 }
+\arguments{
+\item{submission_id}{the id of the submission (post) in question.}
+}
 \description{
 Gets the comment ids for the comments in specific posts
 }

@@ -52,6 +52,7 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
 #' Using the API for search
 #' @description Builds the query from parameters that you pass in, handles pagination, etc...
 #' @param type Either "comment" or "submission", depending on which objects you want to search.
+#' @param \dots All of the other search parameters (e.g. size, before, until, etc...)
 #' @return a dataframe of the objects that the API has returned
 #' @export
 ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
@@ -92,7 +93,7 @@ ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
 #'Search submissions
 #' @description High level function that lets you easily search submissions.
 #' @param search_terms The terms to search for. Will search the post title and selftext.
-#' @param
+#' @param \dots Whatever other query parameters that are provided (e.g. size, before, until, etc...)
 #' @return a dataframe
 #' @export
 ps_search_submissions <- function(search_terms = "", ...) {
@@ -106,7 +107,7 @@ ps_search_submissions <- function(search_terms = "", ...) {
 #####################################################################
 #'Search reddit comments
 #' @description High level function that lets you easily search comments
-#' @param search_terms
+#' @param search_terms character vector of the key words to search for
 #' @param ... Any extra parameters to give the query, e.g. since, until, etc...
 #' @export
 ps_search_comments <- function(search_terms = "", ...) {

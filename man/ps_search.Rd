@@ -8,6 +8,8 @@ ps_search(type = c("comment", "submission", "subreddit"), ...)
 }
 \arguments{
 \item{type}{Either "comment" or "submission", depending on which objects you want to search.}
+
+\item{\dots}{All of the other search parameters (e.g. size, before, until, etc...)}
 }
 \value{
 a dataframe of the objects that the API has returned

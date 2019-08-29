@@ -6,6 +6,14 @@
 \usage{
 ps_search_submissions(search_terms = "", ...)
 }
+\arguments{
+\item{search_terms}{The terms to search for. Will search the post title and selftext.}
+
+\item{\dots}{Whatever other query parameters that are provided (e.g. size, before, until, etc...)}
+}
+\value{
+a dataframe
+}
 \description{
 High level function that lets you easily search submissions.
 }

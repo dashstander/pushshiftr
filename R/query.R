@@ -6,7 +6,12 @@ aggregate_fields <- c("author", "link_id", "created_utc", "subreddit")
 
 
 #####################################################################
-#'
+#' Creates a Query S3 Object from many distinct pieces.
+#' @description
+#' Pass in the type of query and all the other varied arguments that you need and it will
+#'   create a proper ps_query object for you.
+#' @param type the type of query (subreddit, post, comment, etc...)
+#' @param \dots all of the other arguments
 #' @export
 ps_query <- function(type, ...) {
   query_pieces <- .build_query(type, ...)
@@ -17,7 +22,13 @@ ps_query <- function(type, ...) {
 
 
 #####################################################################
-#'
+#' Structured way to create to properly create a ps_query object
+#' @param url the full URL endpoint the query is going to hit (params and all)
+#' @param type the type of query
+#' @param sort_type whether to sort on time, score, etc...
+#' @param sort_direction ascending or descending
+#' @param pagination_strategy different ways to paginate
+#' @param size the number of rows returned per request
 #' @export
 new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strategy, size) {
   structure(
@@ -33,6 +44,10 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 
 #####################################################################
+#' Helper function that puts together all the necessary parameters
+#' @param type the type of query
+#' @param search_terms character vector of key words to search for
+#' @param \dots all of the other pieces of the query
 #' @export
 .build_query <- function(type, search_terms, ...) {
 
@@ -65,7 +80,9 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 
 #####################################################################
-#'
+#' Uses parameters to build the URL the request will hit
+#' @param path the path of the query
+#' @param params named list of all of the other parameters (key words, size, etc...)
 #' @export
 .build_url <- function(path, params) {
 
@@ -79,7 +96,10 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 
 #####################################################################
-#'
+#' Ensures all parameters are in the proper format
+#' @description Makes sure all necessary params are there and all vector params are comma-separated
+#' @param \dots Whatever params are given
+#' @return all of the necessary parameters
 #' @export
 .build_params <- function(...) {
   params <- list(...)
@@ -99,7 +119,10 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 
 #####################################################################
-#'
+#' Makes sure search terms are in the proper format
+#' @description Search terms that have spaces or commas are quotes
+#' @param search_terms character vector of the search terms
+#' @return correctly formatted search terms
 #' @export
 .parse_search_terms <- function(search_terms) {
 
@@ -112,8 +135,11 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
 
 
 #####################################################################
-#'
-#' @export
+#' Remove url encoded commas
+#' @description currently URL encoded commas are not supported by api.pushshift.io but
+#'   are mandatory for httr. This replaces them with normal commas at the very end.
+#' @return the url without URL encoded commas
+#' @noRd
 .replace_encoded_commas <- function(url) {
 
   field_match_pattern <- paste0("^", paste(comma_sep_fields, collapse = "|"), "=.*")
