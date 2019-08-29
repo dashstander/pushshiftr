@@ -4,7 +4,6 @@ BASE_PATH <- "reddit/search/%s/"
 USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
 
 
-
 #####################################################################
 #' Basic function to query the pushshift.io API
 #' @description Given a URL, returns the response
