@@ -15,8 +15,13 @@
 #' @return  the ids that may be duplicated in the next request
 .get_possible_duplicate_ids <- function(data, min_utc) {
 
-  data[data$created_utc <= min_utc + 1, "id"]
 
+  items_to_grab = purrr::map_lgl(
+    data,
+    ~.x$created_utc <= min_utc
+  )
+
+  purrr::map_chr(data[items_to_grab], ~.x$id)
 }
 
 

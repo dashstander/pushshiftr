@@ -11,7 +11,6 @@ USER_AGENT <- httr::user_agent("www.github.com/dashstander/pushshiftr")
 #' @param provided_ids character vector of ids to exclude
 #' @export
 ps_reddit_api <- function(url, provided_ids = character(0)) {
-
   response <- httr::GET(url, USER_AGENT)
 
   if (httr::http_error(response)) {
@@ -24,20 +23,26 @@ ps_reddit_api <- function(url, provided_ids = character(0)) {
     )
   }
 
-  parsed <- jsonlite::fromJSON(httr::content(response,
-                                             type = "text",
-                                             encoding = "UTF-8"),
-                              simplifyDataFrame = TRUE)
+  parsed <- jsonlite::fromJSON(
+    httr::content(
+      response,
+      type = "text",
+      encoding = "UTF-8"
+    ),
+    simplifyVector = FALSE
+  )
 
-  Data <- parsed$data[parsed$data$id %notin% provided_ids, ]
+  data <- purrr::keep(parsed$data, ~.x$id %notin% provided_ids)
+
+  all_utc <- purrr::map_int(data, ~.x$created_utc)
 
   structure(
     list(
-      min_utc = tryCatch(min(Data$created_utc),
+      min_utc = tryCatch(min(all_utc),
                          warning = function(e) NA),
-      max_utc = tryCatch(max(Data$created_utc),
+      max_utc = tryCatch(max(all_utc),
                          warning = function(e) NA),
-      content = Data,
+      content = data,
       header = httr::headers(response)
     ),
     class = "ps_api_response"
@@ -69,23 +74,27 @@ ps_search <- function(type = c("comment", "submission", "subreddit"), ...) {
     response <- ps_reddit_api(query$url, ids)
     ids <- c()
 
-    if (is.data.frame(response$content) && nrow(response$content)) data[[i]] <- response$content
+    if (is.list(response$content) && length(response$content)) data[[i]] <- response$content
 
-    if (nrow(response$content) > 0) {
-      print(sprintf("Found %d rows, with min_time of %s",
-                    nrow(response$content),
-                    as.character(lubridate::as_datetime(response$min_utc))))
+    if (length(response$content) > 0) {
+      print(
+        sprintf(
+          "Found %d rows, with min_time of %s",
+          length(response$content),
+          as.character(
+            lubridate::as_datetime(response$min_utc)
+          )
+        )
+      )
       query$url <- httr::modify_url(query$url, query = list(until = response$min_utc + 1))
       ids <- .get_possible_duplicate_ids(response$content, response$min_utc)
       i <- i + 1
-      Sys.sleep(1)
+      Sys.sleep(0.5)
     } else {
       break
     }
   }
-
-  jsonlite::rbind_pages(data)
-
+  purrr::flatten(data)
 }
 
 #####################################################################
@@ -125,3 +134,16 @@ ps_search_comments <- function(search_terms = "", ...) {
 ps_get_comment_ids <- function(submission_id) {
 
 }
+
+
+
+#####################################################################
+#'Aggregate reddit posts
+ps_agg_submissions <- function(
+  agg_type=c("author", "link_id", "created_utc", "subreddit"),
+  frequency=c("second", "minute", "hour", "day"), ...) {
+
+
+}
+
+

@@ -109,9 +109,6 @@ new_ps_query <- function(url, type, sort_type, sort_direction, pagination_strate
   params <- replace_if_missing(params, fields_with_defaults)
 
   vec_params = sapply(params, function(x) length(x) > 1)
-
-  print(params[vec_params])
-
   params[vec_params] = param_to_csv(params[vec_params])
 
   params
